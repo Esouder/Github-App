@@ -81,7 +81,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 async def push_made(event, gh, *args, **kwargs):
     if(event.data["pull_request"]["merged"]== True):
         print("A Pull request was merged")
-        targetURL = events.data["pull_request"]["repository"]["url"]+"/.showcase"
+        targetURL = event.data["pull_request"]["repository"]["url"]+"/.showcase"
         showcaseFile = urllib.request.urlopen(targetURL)
         for line in showcaseFile:
             print(line)
