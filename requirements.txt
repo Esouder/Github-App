@@ -1,5 +1,5 @@
 aiohttp
-urllib2
+urllib
 gidgethub>=4.1.0
 PyJWT
 cryptography

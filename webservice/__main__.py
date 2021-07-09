@@ -2,7 +2,7 @@ import asyncio
 import os
 import sys
 import traceback
-import urllib2  
+import urllib
 
 
 import aiohttp
@@ -82,7 +82,7 @@ async def push_made(event, gh, *args, **kwargs):
     if(event.data["pull_request"]["merged"]== True):
         print("A Pull request was merged")
         targetURL = events.data["pull_request"]["repository"]["url"]+"/.showcase"
-        showcaseFile = urllib2.urlopen(targetURL)
+        showcaseFile = urllib.request.urlopen(targetURL)
         for line in showcaseFile:
             print(line)
 
