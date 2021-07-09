@@ -83,6 +83,7 @@ async def push_made(event, gh, *args, **kwargs):
         print("A Pull request was merged")
         targetURL = event.data["repository"]["url"]+"/.showcase"
         showcaseFile = urllib.request.urlopen(targetURL)
+        print(targetURL)
         for line in showcaseFile:
             print(line)
 
