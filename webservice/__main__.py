@@ -2,7 +2,7 @@ import asyncio
 import os
 import sys
 import traceback
-
+import urllib2  
 
 
 import aiohttp
@@ -80,7 +80,12 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 @router.register("pull_request", action="closed")
 async def push_made(event, gh, *args, **kwargs):
     if(event.data["pull_request"]["merged"]== True):
-        print("A merge was made")
+        print("A Pull request was merged")
+        targetURL = events.data["pull_request"]["repository"]["url"]+"/.showcase"
+        showcaseFile = urllib2.urlopen(targetURL)
+        for line in showcaseFile:
+            print(line)
+
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
     else:
