@@ -81,7 +81,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 async def push_made(event, gh, *args, **kwargs):
     if(event.data["merged"]== true):
         print("A merge was made")
-    else if(event.data["merged"]==false):
+    elif(event.data["merged"]==false):
         print("A merge was not made")
     else:
         print("code is broken")
