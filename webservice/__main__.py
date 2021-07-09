@@ -79,7 +79,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 
 @router.register("pull_request", action="closed")
 async def push_made(event, gh, *args, **kwargs):
-    if(event.data["merged"]== true):
+    if(event.data["pull_request"]["merged"]== true):
         print("A merge was made")
     elif(event.data["pull_request"]["merged"]==false):
         print("A merge was not made")
