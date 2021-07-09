@@ -82,8 +82,8 @@ async def push_made(event, gh, *args, **kwargs):
     if(event.data["pull_request"]["merged"]== True):
         print("A Pull request was merged")
         targetURL = event.data["repository"]["url"]+"/.showcase"
-        showcaseFile = urllib.request.urlopen(targetURL)
         print(targetURL)
+        showcaseFile = urllib.request.urlopen(targetURL)
         for line in showcaseFile:
             print(line)
 
