@@ -2,7 +2,7 @@ import asyncio
 import os
 import sys
 import traceback
-import urllib
+import urllib.request
 
 
 import aiohttp
