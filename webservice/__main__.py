@@ -76,6 +76,11 @@ async def repo_installation_added(event, gh, *args, **kwargs):
         )
 
 
+@router.register('push')
+async def push_made():
+    print("A push was made")
+
+
 if __name__ == "__main__":  # pragma: no cover
     app = web.Application()
 
