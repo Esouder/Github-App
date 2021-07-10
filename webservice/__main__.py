@@ -79,6 +79,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 
 @router.register("pull_request", action="closed")
 async def push_made(event, gh, *args, **kwargs):
+    installation_id = event.data["installation"]["id"]
     installation_access_token = await apps.get_installation_access_token(
         gh,
         installation_id=installation_id,
