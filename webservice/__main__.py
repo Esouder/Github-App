@@ -78,7 +78,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 
 
 @router.register("pull_request", action="closed")
-async def push_made(event, gh, *args, **kwargs):
+async def PR_closed(event, gh, *args, **kwargs):
     installation_id = event.data["installation"]["id"]
     installation_access_token = await apps.get_installation_access_token(
         gh,
@@ -91,7 +91,7 @@ async def push_made(event, gh, *args, **kwargs):
         targetURL = event.data["repository"]["url"]+"/.showcase"
         print(targetURL)
 
-        response = await gh.get(targetURL,oauth_token=installation_access_token["token"])
+        response = await gh.getitem(targetURL,oauth_token=installation_access_token["token"])
         print(response)
 
     elif(event.data["pull_request"]["merged"]==False):
