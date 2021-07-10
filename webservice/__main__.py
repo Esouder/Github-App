@@ -123,7 +123,7 @@ async def PR_closed(event, gh, *args, **kwargs):
             showcaseRepoNewBranchTargetURL,
             data={
                 "ref": "refs/heads/showcase-update ",
-                "sha": showcaseRepoDefaultBranchResponse[sha]
+                "sha": showcaseRepoDefaultBranchResponse["sha"]
             },
             oauth_token=installation_access_token["token"]
         )
