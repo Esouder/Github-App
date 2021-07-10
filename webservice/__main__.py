@@ -89,7 +89,7 @@ async def PR_closed(event, gh, *args, **kwargs):
     if(event.data["pull_request"]["merged"]== True):
         print("A Pull request was merged")
         targetURL = "/repos/{owner}/{repo}/contents/{path}"
-        path = "".showcase"
+        path = ".showcase"
         owner = event.data["repository"]["owner"]["login"]
         repo = event.data["repository"]["name"]
         print(targetURL)
