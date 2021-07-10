@@ -98,7 +98,7 @@ async def PR_closed(event, gh, *args, **kwargs):
         response = await gh.getitem(targetURL,oauth_token=installation_access_token["token"])
         #print(response)
 
-        showcaseFile = urllib.request.urlopen(response["dowload_url"])
+        showcaseFile = urllib.request.urlopen(response["download_url"])
 
         for line in showcaseFile:
             print(line)
