@@ -101,6 +101,7 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseFile = urllib.request.urlopen(response["download_url"])
         showcaseData = showcaseFile.readlines()
         for line in showcaseData:
+            line = line.decode('utf-8')
             print(line)
 
     elif(event.data["pull_request"]["merged"]==False):
