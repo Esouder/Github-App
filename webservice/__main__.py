@@ -119,16 +119,16 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{showcaseRepo}/git/refs"
 
 
-        newBranchCreatedresponse = await gh.post(
-            showcaseRepoNewBranchTargetURL,
-            data={
-                "ref": "refs/heads/showcase-update ",
-                "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
-            },
-            oauth_token=installation_access_token["token"]
-        )
+        # newBranchCreatedresponse = await gh.post(
+        #     showcaseRepoNewBranchTargetURL,
+        #     data={
+        #         "ref": "refs/heads/showcase-update ",
+        #         "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
+        #     },
+        #     oauth_token=installation_access_token["token"]
+        # )
 
-        print(newBranchCreatedresponse)
+        print(showcaseRepoDefaultBranchResponse)
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
