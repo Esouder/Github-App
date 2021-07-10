@@ -93,16 +93,24 @@ async def PR_closed(event, gh, *args, **kwargs):
         owner = event.data["repository"]["owner"]["login"]
         repo = event.data["repository"]["name"]
 
-        targetURL = "/repos/"+owner+"/"+repo+"/contents/"+path
-        print(targetURL)
+        showcaseFileTargetURL = "/repos/"+owner+"/"+repo+"/contents/"+path
+        #print(showcaseFileTargetURL)
 
-        response = await gh.getitem(targetURL,oauth_token=installation_access_token["token"])
+        localShowcaseFileResponse = await gh.getitem(showcaseFileTargetURL,oauth_token=installation_access_token["token"])
         #print(response)
 
-        showcaseFile = urllib.request.urlopen(response["download_url"])
-        showcaseData = json.loads(showcaseFile.read())
-        print(showcaseData)
-        print(showcaseData["isShowcaseRepo"])
+        localShowcaseFile = urllib.request.urlopen(localShowcaseFileResponse["download_url"])
+        localShowcaseData = json.loads(localShowcaseFile.read())
+        #print(localShowcaseData)
+        #print(localShowcaseData["isShowcaseRepo"])
+
+        showcaseRepo = localShowcaseData["showcaseRepo"]
+
+        showcaseRepoTargetURL = "/repos/"+owner+"/"+showcaseRepo+"/"
+
+        showcaseRepoResponse = await gh.getitem(showcaseRepoTargetURL,oauth_token=installation_access_token["token"])
+
+        print(showcaseRepoResponse)
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
