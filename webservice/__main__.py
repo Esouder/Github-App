@@ -3,6 +3,7 @@ import os
 import sys
 import traceback
 import urllib.request
+import json
 
 
 import aiohttp
@@ -99,9 +100,9 @@ async def PR_closed(event, gh, *args, **kwargs):
         #print(response)
 
         showcaseFile = urllib.request.urlopen(response["download_url"])
-        showcaseData = showcaseFile.read().decode('utf-8')
-        for line in showcaseData:
-            print(line)
+        showcaseData = json.loads(showcaseFile.read())
+        print(showcaseData)
+        print(showcaseData["isShowcaseRepo"])
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
