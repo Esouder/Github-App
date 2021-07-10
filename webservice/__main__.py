@@ -99,7 +99,7 @@ async def PR_closed(event, gh, *args, **kwargs):
         #print(response)
 
         showcaseFile = urllib.request.urlopen(response["download_url"])
-        showcaseData = showcaseFile.read()
+        showcaseData = showcaseFile.decode('utf-8')
 
         for line in showcaseData:
             print(line)
