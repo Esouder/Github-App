@@ -79,13 +79,19 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 
 @router.register("pull_request", action="closed")
 async def push_made(event, gh, *args, **kwargs):
+    installation_access_token = await apps.get_installation_access_token(
+        gh,
+        installation_id=installation_id,
+        app_id=os.environ.get("GH_APP_ID"),
+        private_key=os.environ.get("GH_PRIVATE_KEY"),
+    )
     if(event.data["pull_request"]["merged"]== True):
         print("A Pull request was merged")
         targetURL = event.data["repository"]["url"]+"/.showcase"
         print(targetURL)
-        showcaseFile = urllib.request.urlopen(targetURL)
-        for line in showcaseFile:
-            print(line)
+
+        response = await gh.get(targetURL,oauth_token=installation_access_token["token"])
+        print(response)
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
