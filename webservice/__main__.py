@@ -110,7 +110,13 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         showcaseRepoResponse = await gh.getitem(showcaseRepoTargetURL,oauth_token=installation_access_token["token"])
 
-        print(showcaseRepoResponse)
+        showcaseRepoDefaultBranch = showcaseRepoResponse["default_branch"]
+
+        showcaseRepoDefaultBranchTargetURL = showcaseRepoTargetURL+"/git/ref/"+showcaseRepoDefaultBranch
+
+        showcaseRepoDefaultBranchResponse = await gh.getitem(showcaseRepoDefaultBranchTargetURL,oauth_token=installation_access_token["token"])
+
+        print(showcaseRepoDefaultBranchResponse)
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
