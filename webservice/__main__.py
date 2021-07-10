@@ -88,10 +88,13 @@ async def PR_closed(event, gh, *args, **kwargs):
     )
     if(event.data["pull_request"]["merged"]== True):
         print("A Pull request was merged")
-        targetURL = event.data["repository"]["url"]+"/.showcase"
+        targetURL = "/repos/{owner}/{repo}/contents/{path}"
+        path = "".showcase"
+        owner = event.data["repository"]["owner"]["login"]
+        repo = event.data["repository"]["name"]
         print(targetURL)
 
-        response = await gh.getitem(targetURL,oauth_token=installation_access_token["token"])
+        response = await gh.getitem(targetURL,path,owner,repo,oauth_token=installation_access_token["token"])
         print(response)
 
     elif(event.data["pull_request"]["merged"]==False):
