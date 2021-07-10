@@ -106,7 +106,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         showcaseRepo = localShowcaseData["showcaseRepo"]
 
-        showcaseRepoTargetURL = "/repos/"+owner+"/"+showcaseRepo+"/"
+        showcaseRepoTargetURL = "/repos/"+owner+"/"+showcaseRepo
 
         showcaseRepoResponse = await gh.getitem(showcaseRepoTargetURL,oauth_token=installation_access_token["token"])
 
