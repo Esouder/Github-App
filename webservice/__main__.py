@@ -125,7 +125,8 @@ async def PR_closed(event, gh, *args, **kwargs):
                 "ref": "refs/heads/showcase-update ",
                 "sha": showcaseRepoDefaultBranchResponse[sha]
             },
-            oauth_token=installation_access_token["token"],
+            oauth_token=installation_access_token["token"]
+        )
 
         print(newBranchCreatedresponse)
 
