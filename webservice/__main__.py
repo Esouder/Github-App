@@ -112,7 +112,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         showcaseRepoDefaultBranch = showcaseRepoResponse["default_branch"]
 
-        showcaseRepoDefaultBranchTargetURL = showcaseRepoTargetURL+"/git/ref/"+showcaseRepoDefaultBranch
+        showcaseRepoDefaultBranchTargetURL = showcaseRepoTargetURL+"/git/ref/heads/"+showcaseRepoDefaultBranch
 
         showcaseRepoDefaultBranchResponse = await gh.getitem(showcaseRepoDefaultBranchTargetURL,oauth_token=installation_access_token["token"])
 
