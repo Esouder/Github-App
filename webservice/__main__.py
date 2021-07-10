@@ -96,7 +96,12 @@ async def PR_closed(event, gh, *args, **kwargs):
         print(targetURL)
 
         response = await gh.getitem(targetURL,oauth_token=installation_access_token["token"])
-        print(response)
+        #print(response)
+
+        showcaseFile = urllib.request.urlopen(response["dowload_url"])
+
+        for line in showcaseFile:
+            print(line)
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
