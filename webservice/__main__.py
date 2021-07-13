@@ -141,11 +141,12 @@ async def PR_closed(event, gh, *args, **kwargs):
             oauth_token=installation_access_token["token"]
         )
 
-        print(newBranchCreatedresponse)
+        #print(newBranchCreatedresponse)
 
         upperPath = "/repos/"+owner+"/"+repo+"/contents/"
 
-        collectURLs(upperPath)
+        loop.run_until_complete(loop.create_task(collectURLs( upperPath)))
+
 
 
 
