@@ -78,6 +78,19 @@ async def repo_installation_added(event, gh, *args, **kwargs):
         )
 
 
+def collectURLs(path):
+    #get the contents of the directory
+    response = await gh.getiter(path,oauth_token=installation_access_token["token"]) # don't know if this is right
+
+    print(response)
+
+    #for everyting in the response:
+
+        #if they are items, add the file URLS to the list
+
+        #if it's a directory, recursivly call the function on it.
+
+
 @router.register("pull_request", action="closed")
 async def PR_closed(event, gh, *args, **kwargs):
     installation_id = event.data["installation"]["id"]
@@ -89,11 +102,11 @@ async def PR_closed(event, gh, *args, **kwargs):
     )
     if(event.data["pull_request"]["merged"]== True):
         print("A Pull request was merged")
-        path = ".showcase"
+        file = ".showcase"
         owner = event.data["repository"]["owner"]["login"]
         repo = event.data["repository"]["name"]
 
-        showcaseFileTargetURL = "/repos/"+owner+"/"+repo+"/contents/"+path
+        showcaseFileTargetURL = "/repos/"+owner+"/"+repo+"/contents/"+file
         #print(showcaseFileTargetURL)
 
         localShowcaseFileResponse = await gh.getitem(showcaseFileTargetURL,oauth_token=installation_access_token["token"])
@@ -129,6 +142,12 @@ async def PR_closed(event, gh, *args, **kwargs):
         )
 
         print(newBranchCreatedresponse)
+
+        upperPath = "/repos/"+owner+"/"+repo+"/contents/"
+
+        collectURLs(upperPath)
+
+
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
