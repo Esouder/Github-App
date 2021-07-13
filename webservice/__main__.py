@@ -145,9 +145,9 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         upperPath = "/repos/"+owner+"/"+repo+"/contents/"
 
-        await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
+        repoContentsResponse =  collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
-
+        await repoContentsResponse
 
 
     elif(event.data["pull_request"]["merged"]==False):
