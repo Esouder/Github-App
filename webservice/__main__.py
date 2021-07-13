@@ -80,7 +80,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 
 async def collectURLs(path, gh, oauth_token):
     #get the contents of the directory
-    response = gh.getiter(path,oauth_token) # don't know if this is right
+    response = await gh.getiter(path,oauth_token) # don't know if this is right
 
     for item in response:
         print(item)
@@ -133,14 +133,14 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{showcaseRepo}/git/refs"
 
 
-        newBranchCreatedresponse = await gh.post(
-            showcaseRepoNewBranchTargetURL,
-            data={
-                "ref": "refs/heads/showcase-update",
-                "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
-            },
-            oauth_token=installation_access_token["token"]
-        )
+        # newBranchCreatedresponse = await gh.post(
+        #     showcaseRepoNewBranchTargetURL,
+        #     data={
+        #         "ref": "refs/heads/showcase-update",
+        #         "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
+        #     },
+        #     oauth_token=installation_access_token["token"]
+        # )
 
         #print(newBranchCreatedresponse)
 
