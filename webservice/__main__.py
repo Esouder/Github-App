@@ -145,7 +145,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         upperPath = "/repos/"+owner+"/"+repo+"/contents/"
 
-        loop.run_until_complete(loop.create_task(collectURLs( upperPath)))
+        await collectURLs(upperPath))
 
 
 
