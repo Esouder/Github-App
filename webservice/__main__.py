@@ -78,9 +78,9 @@ async def repo_installation_added(event, gh, *args, **kwargs):
         )
 
 
-async def collectURLs(path):
+async def collectURLs(path, gh, oauth_token):
     #get the contents of the directory
-    response = await gh.getiter(path,oauth_token=installation_access_token["token"]) # don't know if this is right
+    response = await gh.getiter(path,oauth_token) # don't know if this is right
 
     print(response)
 
@@ -145,7 +145,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         upperPath = "/repos/"+owner+"/"+repo+"/contents/"
 
-        await collectURLs(upperPath)
+        await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
 
 
