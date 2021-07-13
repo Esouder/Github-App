@@ -82,7 +82,8 @@ async def collectURLs(path, gh, oauth_token):
     #get the contents of the directory
     response = gh.getiter(path,oauth_token) # don't know if this is right
 
-    print(response)
+    for item in response:
+        print(item)
 
     #for everyting in the response:
 
