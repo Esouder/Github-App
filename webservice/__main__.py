@@ -78,7 +78,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
         )
 
 
-def async collectURLs(path):
+async def collectURLs(path):
     #get the contents of the directory
     response = await gh.getiter(path,oauth_token=installation_access_token["token"]) # don't know if this is right
 
