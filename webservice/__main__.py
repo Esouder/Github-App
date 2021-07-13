@@ -82,8 +82,8 @@ async def collectURLs(path, gh, oauth_token):
     #get the contents of the directory
     response = await gh.getiter(path,oauth_token) # don't know if this is right
 
-    for item in response:
-        print(item)
+    return response
+
 
     #for everyting in the response:
 
@@ -149,6 +149,9 @@ async def PR_closed(event, gh, *args, **kwargs):
         repoContentsResponse =  collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
         await repoContentsResponse
+
+        for item in repoContentsResponse:
+            print(item)
 
 
     elif(event.data["pull_request"]["merged"]==False):
