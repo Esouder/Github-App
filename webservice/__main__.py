@@ -148,9 +148,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         repoContentsResponse =  collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
-        await repoContentsResponse
-
-        for item in repoContentsResponse:
+        async for item in repoContentsResponse:
             print(item)
 
 
