@@ -145,7 +145,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         upperPath = "/repos/"+owner+"/"+repo+"/contents/"
 
-        await collectURLs(upperPath))
+        await collectURLs(upperPath)
 
 
 
