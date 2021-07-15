@@ -146,7 +146,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         upperPath = "/repos/"+owner+"/"+repo+"/contents/"
 
-        repoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
+        repoContentsResponse =  await asyncio.gather(collectURLs(upperPath,gh,oauth_token=installation_access_token["token"]))
 
 
         for item in repoContentsResponse:
