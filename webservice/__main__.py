@@ -81,7 +81,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 async def collectURLs(path, gh, oauth_token):
     #get the contents of the directory
     responses = []
-    response = await gh.getiter(path,oauth_token)
+    response = gh.getiter(path,oauth_token)
     async for item in response: # don't know if this is right
         responses.append(item)
 
