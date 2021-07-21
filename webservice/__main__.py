@@ -158,8 +158,7 @@ async def PR_closed(event, gh, *args, **kwargs):
         repoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
 
-        for item in repoContentsResponse:
-            print(item["name"]+"\n")
+        print(repoContentsResponse)
 
 
     elif(event.data["pull_request"]["merged"]==False):
