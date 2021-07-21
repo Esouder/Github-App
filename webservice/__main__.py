@@ -86,7 +86,7 @@ async def collectURLs(path, gh, oauth_token):
         #print(item)
         if(item["type"]=="file"):
             responses.append(item)
-        else if (item["type"]=="dir"):
+        elif (item["type"]=="dir"):
             recursiveResponses = await collectURLs(path+item["path"], gh, oauth_token)
             responses.append(recursiveResponses)
 
