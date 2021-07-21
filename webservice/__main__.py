@@ -20,6 +20,15 @@ cache = cachetools.LRUCache(maxsize=500)
 routes = web.RouteTableDef()
 
 
+# can you tell I'm more of a C guy?
+def appext(origlist,data):
+    if(type(data) is list):
+        origlist.extend(data)
+    else:
+        origlist.append(data)
+    return origlist 
+
+
 @routes.get("/", name="home")
 async def handle_get(request):
     return web.Response(text="Hello world")
@@ -88,7 +97,7 @@ async def collectURLs(path, gh, oauth_token):
             responses.append(item)
         elif (item["type"]=="dir"):
             recursiveResponses = await collectURLs(path+item["path"], gh, oauth_token)
-            responses.append(recursiveResponses)
+            responses = appext(responses,recursiveResponses)
 
 
     return responses
