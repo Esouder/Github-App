@@ -81,7 +81,7 @@ async def repo_installation_added(event, gh, *args, **kwargs):
 async def collectURLs(path, gh, oauth_token):
     #get the contents of the directory
     responses = []
-    response = gh.getitem(path,accept="application/vnd.github.VERSION.object",oauth_token=oauth_token)
+    response = await gh.getitem(path,accept="application/vnd.github.VERSION.object",oauth_token=oauth_token)
     print(response)
 
     return responses
