@@ -82,7 +82,14 @@ async def collectURLs(path, gh, oauth_token):
     #get the contents of the directory
     responses = []
     response = await gh.getitem(path,accept="application/vnd.github.VERSION.object",oauth_token=oauth_token)
-    print(response)
+    for item in response["entries"]:
+        #print(item)
+        if(item["type"]=="file"):
+            responses.append(item)
+        else if (item["type"]=="dir"):
+            recursiveResponses = await collectURLs(path+item["path"], gh, oauth_token)
+            responses.append(recursiveResponses)
+
 
     return responses
 
@@ -151,8 +158,8 @@ async def PR_closed(event, gh, *args, **kwargs):
         repoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
 
-        #for item in repoContentsResponse:
-        #    print(item)
+        for item in repoContentsResponse:
+            print(item["name"]+"\n")
 
 
     elif(event.data["pull_request"]["merged"]==False):
