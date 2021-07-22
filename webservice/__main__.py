@@ -124,7 +124,7 @@ async def PR_opened(event,gh,*args,**kwargs):
     )
     print(event.data)
     response = await gh.post(
-            event.data["_links"]["comments"],
+            event.data["pull_request"]["comments_url"],
             data={
                 "body": "When you merge this pull request, your changes will be automatically reflected accross your linked showcase repositories",
             },
