@@ -170,11 +170,16 @@ async def PR_closed(event, gh, *args, **kwargs):
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
         
+
+        testString = "hello world"
         for file in repoContentsResponse:
             fileContents = urllib.request.urlopen(file["download_url"]).read()
             encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
-
-            if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
+            
+            #print(fileContents)
+            #print(encodedFileContents)
+            #print('=====')
+            if((file["path"] not in localShowcaseData["excludedFiles"])||(file["path"] not ".showcase")):
                 await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
