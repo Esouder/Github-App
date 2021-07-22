@@ -153,14 +153,14 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{showcaseRepo}/git/refs"
 
 
-        #newBranchCreatedresponse = await gh.post(
-        #    showcaseRepoNewBranchTargetURL,
-        #    data={
-        #        "ref": "refs/heads/showcase-update",
-        #        "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
-        #    },
-        #    oauth_token=installation_access_token["token"]
-        #)
+        newBranchCreatedresponse = await gh.post(
+            showcaseRepoNewBranchTargetURL,
+            data={
+                "ref": "refs/heads/showcase-update",
+                "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
+            },
+            oauth_token=installation_access_token["token"]
+        )
 
         upperPath = "/repos/"+owner+"/"+repo+"/contents/"
 
