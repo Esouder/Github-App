@@ -138,7 +138,9 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         localShowcaseData = json.loads(localShowcaseFile.read())
 
-        showcaseRepoTargetURL = "/repos/"+owner+"/"+localShowcaseData["showcaseRepo"]
+        showcaseRepo = localShowcaseData["showcaseRepo"]
+
+        showcaseRepoTargetURL = "/repos/"+owner+"/"+showcaseRepo
 
         showcaseRepoResponse = await gh.getitem(showcaseRepoTargetURL,oauth_token=installation_access_token["token"])
 
@@ -148,7 +150,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         showcaseRepoDefaultBranchResponse = await gh.getitem(showcaseRepoDefaultBranchTargetURL,oauth_token=installation_access_token["token"])
 
-        showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{localShowcaseData["showcaseRepo"]}/git/refs"
+        showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{showcaseRepo}/git/refs"
 
 
         newBranchCreatedresponse = await gh.post(
