@@ -175,7 +175,7 @@ async def PR_closed(event, gh, *args, **kwargs):
             #print(encodedFileContents)
             #print('=====')
 
-            await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+file["path"],0,gh,oauth_token=installation_access_token["token"])
+            await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+showcaseRepo+file["path"],0,gh,oauth_token=installation_access_token["token"])
             
         #print(localShowcaseFile.read()) #hmm seems to think this is empty. Try again with a differnet file?
 
