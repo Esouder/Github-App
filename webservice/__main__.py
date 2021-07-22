@@ -164,8 +164,9 @@ async def PR_closed(event, gh, *args, **kwargs):
         #    oauth_token=installation_access_token["token"]
         #)
         
-        showcaseBranchURL = f"/repos/{owner}/{showcaseRepo}/contents"
-        existingFiles = await collectFiles(showcaseBranchURL,gh,oauth_token=installation_access_token["token"])
+        showcaseFolderURL = f"/repos/{owner}/{showcaseRepo}/contents/"+repo
+        existingFiles = await collectFiles(showcaseFolderURL,gh,oauth_token=installation_access_token["token"])
+        print (existingFiles)
 
 
 
@@ -177,15 +178,15 @@ async def PR_closed(event, gh, *args, **kwargs):
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
                 for file in repoContentsResponse:
-            fileContents = urllib.request.urlopen(file["download_url"]).read()
-            encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
+                    fileContents = urllib.request.urlopen(file["download_url"]).read()
+                    encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
 
-            if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
-                if(file["path"] in existingFiles["path"]):
-                    print("file already exists!")
-                else 
-                    print("file does not exist!")
-                await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
+                     if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
+                        if(file["path"] in existingFiles["path"]):
+                        print("file already exists!")
+                    else 
+                        print("file does not exist!")
+                        #await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
     elif(event.data["pull_request"]["merged"]==False):
