@@ -168,10 +168,11 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         testString = "hello world"
         for file in repoContentsResponse:
-            fileContents = urllib.request.urlopen(file["download_url"])
+            fileContents = urllib.request.urlopen(file["download_url"]).read()
+            encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
 
             print(fileContents)
-            print(fileContents.read())
+            print(encodedFileContents)
             print('=====')
         #print(localShowcaseFile.read()) #hmm seems to think this is empty. Try again with a differnet file?
 
