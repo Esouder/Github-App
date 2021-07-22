@@ -169,7 +169,7 @@ async def PR_closed(event, gh, *args, **kwargs):
         repoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
         testString = "hello world"
-                print(localShowcaseFile.read())
+        print(localShowcaseFile.read())
 
         await placeFile(str(base64.b64encode(localShowcaseFile.read()),"utf-8"),showcaseRepoTargetURL+"/contents/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
 
