@@ -177,16 +177,16 @@ async def PR_closed(event, gh, *args, **kwargs):
             subsetRepoContentsResponse =  await collectFiles(upperPath,gh,oauth_token=installation_access_token["token"])
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
-                for file in repoContentsResponse:
-                    fileContents = urllib.request.urlopen(file["download_url"]).read()
-                    encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
+            for file in repoContentsResponse:
+                fileContents = urllib.request.urlopen(file["download_url"]).read()
+                encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
 
-                     if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
-                        if(file["path"] in existingFiles["path"]):
-                        print("file already exists!")
-                    else 
-                        print("file does not exist!")
-                        #await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
+                if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
+                    if(file["path"] in existingFiles["path"]):
+                    print("file already exists!")
+                else 
+                    print("file does not exist!")
+                    #await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
     elif(event.data["pull_request"]["merged"]==False):
