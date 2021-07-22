@@ -170,7 +170,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         testString = "hello world"
 
-        await placeFile(base64.b64encode(testString.encode("utf-8")),showcaseRepoTargetURL+"/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
+        await placeFile(str(base64.b64encode(testString.encode("utf-8")),"utf-8"),showcaseRepoTargetURL+"/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
 
 
         #iterate through the files that are allowed in the showcase file
