@@ -112,6 +112,26 @@ async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
             oauth_token=oauth_token 
         )
 
+@router.register("pull_request", action="opened")
+async def PR_opened(event,gh,*args,**kwargs):
+    installation_id = event.data["installation"]["id"]
+    repo = event.data["repository"]["name"]
+    installation_access_token = await apps.get_installation_access_token(
+        gh,
+        installation_id=installation_id,
+        app_id=os.environ.get("GH_APP_ID"),
+        private_key=os.environ.get("GH_PRIVATE_KEY"),
+    )
+    response = await gh.post(
+            event["_links"]["comments"],
+            data={
+                "body": "When you merge this pull request, your changes will be automatically reflected accross your linked showcase repositories",
+            },
+            oauth_token=installation_access_token["token"],
+        )
+
+
+
 
 
 @router.register("pull_request", action="closed")
