@@ -153,25 +153,25 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{showcaseRepo}/git/refs"
 
 
-        newBranchCreatedresponse = await gh.post(
-            showcaseRepoNewBranchTargetURL,
-            data={
-                "ref": "refs/heads/showcase-update",
-                "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
-            },
-            oauth_token=installation_access_token["token"]
-        )
-
-        #print(newBranchCreatedresponse)
+        #newBranchCreatedresponse = await gh.post(
+        #    showcaseRepoNewBranchTargetURL,
+        #    data={
+        #        "ref": "refs/heads/showcase-update",
+        #        "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
+        #    },
+        #    oauth_token=installation_access_token["token"]
+        #)
 
         upperPath = "/repos/"+owner+"/"+repo+"/contents/"
 
         repoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
         testString = "hello world"
-        print(localShowcaseFile.read())
+        for file in repoContentsResponse:
+            print(file)
+        #print(localShowcaseFile.read()) #hmm seems to think this is empty. Try again with a differnet file?
 
-        await placeFile(str(base64.b64encode(localShowcaseFile.read()),"utf-8"),showcaseRepoTargetURL+"/contents/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
+        #await placeFile(str(base64.b64encode(localShowcaseFile.read()),"utf-8"),showcaseRepoTargetURL+"/contents/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
 
         #iterate through the files that are allowed in the showcase file
 
