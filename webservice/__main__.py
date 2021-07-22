@@ -179,7 +179,7 @@ async def PR_closed(event, gh, *args, **kwargs):
             #print(fileContents)
             #print(encodedFileContents)
             #print('=====')
-            if((file["path"] not in localShowcaseData["excludedFiles"])||(file["path"] not ".showcase")):
+            if(file["path"] not in localShowcaseData["excludedFiles"]):
                 await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
