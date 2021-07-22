@@ -183,9 +183,9 @@ async def PR_closed(event, gh, *args, **kwargs):
 
                 if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
                     if(file["path"] in existingFiles["path"]):
-                    print("file already exists!")
-                else 
-                    print("file does not exist!")
+                        print("file already exists!")
+                    else 
+                        print("file does not exist!")
                     #await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
