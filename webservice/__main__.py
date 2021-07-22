@@ -138,7 +138,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         localShowcaseData = json.loads(localShowcaseFile.read())
 
-        showcaseRepoTargetURL = "/repos/"+owner+"/"+localShowcaseData["showcaseRepo"]+"/"
+        showcaseRepoTargetURL = "/repos/"+owner+"/"+localShowcaseData["showcaseRepo"]
 
         showcaseRepoResponse = await gh.getitem(showcaseRepoTargetURL,oauth_token=installation_access_token["token"])
 
@@ -168,7 +168,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         testString = "hello world"
 
-        await placeFile(base64.b64encode(testString.encode("utf-8")),showcaseRepoTargetURL+"testfile.txt",0,gh,oauth_token)
+        await placeFile(base64.b64encode(testString.encode("utf-8")),showcaseRepoTargetURL+"/testfile.txt",0,gh,oauth_token)
 
 
         #iterate through the files that are allowed in the showcase file
