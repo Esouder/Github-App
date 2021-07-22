@@ -168,7 +168,11 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         testString = "hello world"
         for file in repoContentsResponse:
-            print(file)
+            fileContents = urllib.request.urlopen(file["download_url"])
+
+            print(contents)
+            print(fileContents.read())
+            print('=====')
         #print(localShowcaseFile.read()) #hmm seems to think this is empty. Try again with a differnet file?
 
         #await placeFile(str(base64.b64encode(localShowcaseFile.read()),"utf-8"),showcaseRepoTargetURL+"/contents/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
