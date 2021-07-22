@@ -88,17 +88,16 @@ async def repo_installation_added(event, gh, *args, **kwargs):
         )
 
 
-async def collectFiles(path, gh, oauth_token, ref=null):
-    #get the contents of the directory  
+async def collectURLs(path, gh, oauth_token):
+    #get the contents of the directory
     responses = []
-    #would be best if this actually used the ref
     response = await gh.getitem(path,accept="application/vnd.github.VERSION.object",oauth_token=oauth_token)
     for item in response["entries"]:
         #print(item)
         if(item["type"]=="file"):
             responses.append(item)
         elif (item["type"]=="dir"):
-            recursiveResponses = await collectFiles(path+item["path"], gh, oauth_token)
+            recursiveResponses = await collectURLs(path+item["path"], gh, oauth_token)
             responses = appext(responses,recursiveResponses)
     return responses
 
@@ -162,20 +161,16 @@ async def PR_closed(event, gh, *args, **kwargs):
             },
             oauth_token=installation_access_token["token"]
         )
-        
-        showcaseBranchURL = f"/repos/{owner}/{showcaseRepo}/contents"
-        existingFiles = await collectFiles(showcaseBranchURL,gh,oauth_token=installation_access_token["token"])
-
-
 
         repoContentsResponse = []
         acceptableFilePaths = localShowcaseData["includedDirectories"]
         for path in acceptableFilePaths:
             upperPath = "/repos/"+owner+"/"+repo+"/contents"+path
-            subsetRepoContentsResponse =  await collectFiles(upperPath,gh,oauth_token=installation_access_token["token"])
+            subsetRepoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
-                for file in repoContentsResponse:
+        
+        for file in repoContentsResponse:
             fileContents = urllib.request.urlopen(file["download_url"]).read()
             encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
 
