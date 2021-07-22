@@ -88,26 +88,28 @@ async def repo_installation_added(event, gh, *args, **kwargs):
         )
 
 
-async def collectURLs(path, gh, oauth_token):
-    #get the contents of the directory
+async def collectFiles(path, gh, oauth_token, ref=null):
+    #get the contents of the directory  
     responses = []
+    #would be best if this actually used the ref
     response = await gh.getitem(path,accept="application/vnd.github.VERSION.object",oauth_token=oauth_token)
     for item in response["entries"]:
         #print(item)
         if(item["type"]=="file"):
             responses.append(item)
         elif (item["type"]=="dir"):
-            recursiveResponses = await collectURLs(path+item["path"], gh, oauth_token)
+            recursiveResponses = await collectFiles(path+item["path"], gh, oauth_token)
             responses = appext(responses,recursiveResponses)
     return responses
 
-async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
+async def placeFile(fileContents,newPath,SHA=None,gh,oauth_token):
     response = await gh.put(
             newPath,
             data={
                 "message": "Showcaser Auto Commit: Updating Showcased Files",
                 "content": fileContents,
-                "branch" : "showcase-update"
+                "branch" : "showcase-update",
+                "sha" : SHA if sha not None
             },
             oauth_token=oauth_token 
         )
@@ -153,33 +155,36 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{showcaseRepo}/git/refs"
 
 
-        newBranchCreatedresponse = await gh.post(
-            showcaseRepoNewBranchTargetURL,
-            data={
-                "ref": "refs/heads/showcase-update",
-                "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
-            },
-            oauth_token=installation_access_token["token"]
-        )
+        #newBranchCreatedresponse = await gh.post(
+        #    showcaseRepoNewBranchTargetURL,
+        #    data={
+        #        "ref": "refs/heads/showcase-update",
+        #        "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
+        #    },
+        #    oauth_token=installation_access_token["token"]
+        #)
+        
+        showcaseBranchURL = f"/repos/{owner}/{showcaseRepo}/contents"
+        existingFiles = await collectFiles(showcaseBranchURL,gh,oauth_token=installation_access_token["token"])
+
+
 
         repoContentsResponse = []
         acceptableFilePaths = localShowcaseData["includedDirectories"]
         for path in acceptableFilePaths:
             upperPath = "/repos/"+owner+"/"+repo+"/contents"+path
-            subsetRepoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
+            subsetRepoContentsResponse =  await collectFiles(upperPath,gh,oauth_token=installation_access_token["token"])
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
-        
-
-        testString = "hello world"
-        for file in repoContentsResponse:
+                for file in repoContentsResponse:
             fileContents = urllib.request.urlopen(file["download_url"]).read()
             encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
-            
-            #print(fileContents)
-            #print(encodedFileContents)
-            #print('=====')
-            if(file["path"] not in localShowcaseData["excludedFiles"]):
+
+            if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
+                if(file["path"] in existingFiles["path"]):
+                    print("file already exists!")
+                else 
+                    print("file does not exist!")
                 await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
