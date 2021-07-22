@@ -169,9 +169,9 @@ async def PR_closed(event, gh, *args, **kwargs):
         repoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
 
         testString = "hello world"
+                print(localShowcaseFile.read())
 
-        await placeFile(str(base64.b64encode(localShowcaseFile.read().decode("utf-8")),"utf-8"),showcaseRepoTargetURL+"/contents/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
-
+        await placeFile(str(base64.b64encode(localShowcaseFile.read()),"utf-8"),showcaseRepoTargetURL+"/contents/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
 
         #iterate through the files that are allowed in the showcase file
 
