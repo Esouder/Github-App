@@ -162,9 +162,14 @@ async def PR_closed(event, gh, *args, **kwargs):
             oauth_token=installation_access_token["token"]
         )
 
-        upperPath = "/repos/"+owner+"/"+repo+"/contents/"
+        repoContentsResponse = []
+        acceptableFilePaths = localShowcaseData["includedDirectories"]
+        for path in acceptableFilePaths:
+            upperPath = "/repos/"+owner+"/"+repo+"/contents"+path
+            subsetRepoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
+            repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
-        repoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
+        
 
         testString = "hello world"
         for file in repoContentsResponse:
@@ -174,14 +179,8 @@ async def PR_closed(event, gh, *args, **kwargs):
             #print(fileContents)
             #print(encodedFileContents)
             #print('=====')
-
-            await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
-            
-        #print(localShowcaseFile.read()) #hmm seems to think this is empty. Try again with a differnet file?
-
-        #await placeFile(str(base64.b64encode(localShowcaseFile.read()),"utf-8"),showcaseRepoTargetURL+"/contents/testfile.txt",0,gh,oauth_token=installation_access_token["token"])
-
-        #iterate through the files that are allowed in the showcase file
+            if(file["path"] not in localShowcaseData["excludedFiles"]):
+                await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
     elif(event.data["pull_request"]["merged"]==False):
