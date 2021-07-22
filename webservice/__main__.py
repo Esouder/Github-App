@@ -102,14 +102,13 @@ async def collectFiles(path, gh, oauth_token, ref=null):
             responses = appext(responses,recursiveResponses)
     return responses
 
-async def placeFile(fileContents,newPath,SHA=None,gh,oauth_token):
+async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
     response = await gh.put(
             newPath,
             data={
                 "message": "Showcaser Auto Commit: Updating Showcased Files",
                 "content": fileContents,
-                "branch" : "showcase-update",
-                "sha" : SHA
+                "branch" : "showcase-update"
             },
             oauth_token=oauth_token 
         )
@@ -155,18 +154,17 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{showcaseRepo}/git/refs"
 
 
-        #newBranchCreatedresponse = await gh.post(
-        #    showcaseRepoNewBranchTargetURL,
-        #    data={
-        #        "ref": "refs/heads/showcase-update",
-        #        "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
-        #    },
-        #    oauth_token=installation_access_token["token"]
-        #)
+        newBranchCreatedresponse = await gh.post(
+            showcaseRepoNewBranchTargetURL,
+            data={
+                "ref": "refs/heads/showcase-update",
+                "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
+            },
+            oauth_token=installation_access_token["token"]
+        )
         
-        showcaseFolderURL = f"/repos/{owner}/{showcaseRepo}/contents/"+repo
-        existingFiles = await collectFiles(showcaseFolderURL,gh,oauth_token=installation_access_token["token"])
-        print (existingFiles)
+        showcaseBranchURL = f"/repos/{owner}/{showcaseRepo}/contents"
+        existingFiles = await collectFiles(showcaseBranchURL,gh,oauth_token=installation_access_token["token"])
 
 
 
@@ -177,12 +175,12 @@ async def PR_closed(event, gh, *args, **kwargs):
             subsetRepoContentsResponse =  await collectFiles(upperPath,gh,oauth_token=installation_access_token["token"])
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
-            for file in repoContentsResponse:
-                fileContents = urllib.request.urlopen(file["download_url"]).read()
-                encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
+                for file in repoContentsResponse:
+            fileContents = urllib.request.urlopen(file["download_url"]).read()
+            encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
 
-                if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
-                    await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
+            if(file["path"] not in localShowcaseData["excludedFiles"]||file["name"] not ".showcase"):
+                await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
     elif(event.data["pull_request"]["merged"]==False):
