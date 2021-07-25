@@ -114,7 +114,7 @@ async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
 
 def findFromList(list,key,value):
     for item in list:
-        if(item[key] = targetValue):
+        if(item[key] == targetValue):
             return item
 
 @router.register("pull_request", action="opened")
