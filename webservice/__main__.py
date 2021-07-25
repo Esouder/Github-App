@@ -204,7 +204,7 @@ async def PR_closed(event, gh, *args, **kwargs):
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
         for file in repoContentsResponse:
-            if(file["path"] not in localShowcaseData["excludedFiles"] || file["name"] != ".showcase"):
+            if(file["path"] not in localShowcaseData["excludedFiles"] or file["name"] != ".showcase"):
                 fileContents = urllib.request.urlopen(file["download_url"]).read()
                 encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
                 if(file["path"] in showcaseRepoPaths):
