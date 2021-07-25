@@ -208,10 +208,12 @@ async def PR_closed(event, gh, *args, **kwargs):
                 fileContents = urllib.request.urlopen(file["download_url"]).read()
                 encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
                 if(file["path"] in showcaseRepoPaths):
+                    print("file '"+file["path"]+"' already exists")
                     existingFile = findFromList(showCaseRepoContentsResponse,"path",file["path"])
                     SHA = existingFile["SHA"]
                     await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],SHA,gh,oauth_token=installation_access_token["token"])
                 else:
+                    print("file '"+file["path"]+"' does not exist")
                     await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
