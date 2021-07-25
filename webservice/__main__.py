@@ -127,7 +127,7 @@ async def PR_opened(event,gh,*args,**kwargs):
         app_id=os.environ.get("GH_APP_ID"),
         private_key=os.environ.get("GH_PRIVATE_KEY"),
     )
-    print(event.data)
+    #print(event.data)
     response = await gh.post(
             event.data["pull_request"]["comments_url"],
             data={
