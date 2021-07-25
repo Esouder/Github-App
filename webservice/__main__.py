@@ -188,8 +188,8 @@ async def PR_closed(event, gh, *args, **kwargs):
             oauth_token=installation_access_token["token"]
         )
 
-        showCaseRepoContentsResponse = []
-        showCaseRepoContentsResponse =  await collectURLs(showcaseRepoTargetURL+"/contents",gh,oauth_token=installation_access_token["token"])
+        showcaseRepoContentsResponse = []
+        showcaseRepoContentsResponse =  await collectURLs(showcaseRepoTargetURL+"/contents",gh,oauth_token=installation_access_token["token"])
 
         showcaseRepoPaths = []
         for file in showcaseRepoContentsResponse:
