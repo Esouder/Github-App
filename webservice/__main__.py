@@ -112,6 +112,11 @@ async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
             oauth_token=oauth_token 
         )
 
+def findFromList(list,key,value):
+    for item in list:
+        if(item[key] = targetValue):
+            return item
+
 @router.register("pull_request", action="opened")
 async def PR_opened(event,gh,*args,**kwargs):
     installation_id = event.data["installation"]["id"]
@@ -183,6 +188,14 @@ async def PR_closed(event, gh, *args, **kwargs):
             oauth_token=installation_access_token["token"]
         )
 
+        showCaseRepoContentsResponse = []
+        showCaseRepoContentsResponse =  await collectURLs(showcaseRepoTargetURL+"/contents",gh,oauth_token=installation_access_token["token"])
+
+        showcaseRepoPaths = []
+        for file in showcaseRepoContentsResponse:
+            showcaseRepoPaths.append(file["path"])
+        print(showcaseRepoPaths)
+
         repoContentsResponse = []
         acceptableFilePaths = localShowcaseData["includedDirectories"]
         for path in acceptableFilePaths:
@@ -190,18 +203,16 @@ async def PR_closed(event, gh, *args, **kwargs):
             subsetRepoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
-        
-
-        testString = "hello world"
         for file in repoContentsResponse:
-            fileContents = urllib.request.urlopen(file["download_url"]).read()
-            encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
-            
-            #print(fileContents)
-            #print(encodedFileContents)
-            #print('=====')
-            if(file["path"] not in localShowcaseData["excludedFiles"]):
-                await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
+            if(file["path"] not in localShowcaseData["excludedFiles"] || file["name"] != ".showcase"):
+                fileContents = urllib.request.urlopen(file["download_url"]).read()
+                encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
+                if(file["path"] in showcaseRepoPaths):
+                    existingFile = findFromList(showCaseRepoContentsResponse,"path",file["path"])
+                    SHA = existingFile["SHA"]
+                    await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],SHA,gh,oauth_token=installation_access_token["token"])
+                else:
+                    await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
 
 
     elif(event.data["pull_request"]["merged"]==False):
