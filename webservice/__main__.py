@@ -97,7 +97,7 @@ async def collectURLs(path, gh, oauth_token):
         if(item["type"]=="file"):
             responses.append(item)
         elif (item["type"]=="dir"):
-            recursiveResponses = await collectURLs(path+item["path"], gh, oauth_token)
+            recursiveResponses = await collectURLs(path+item["path"]+"/", gh, oauth_token)
             responses = appext(responses,recursiveResponses)
     return responses
 
@@ -183,7 +183,7 @@ async def PR_closed(event, gh, *args, **kwargs):
             showcaseRepoNewBranchTargetURL,
             data={
                 "ref": "refs/heads/showcase-update",
-                "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]
+                "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]       
             },
             oauth_token=installation_access_token["token"]
         )
