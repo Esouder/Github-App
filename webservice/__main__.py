@@ -210,7 +210,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         baseRepoPaths = []
         for file in repoContentsResponse:
-            baseRepoPaths.append(file["path"])
+            baseRepoPaths.append("/contents/"+file["path"])
         print(baseRepoPaths)
 
         for file in repoContentsResponse:
@@ -228,7 +228,7 @@ async def PR_closed(event, gh, *args, **kwargs):
                     await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],None,gh,oauth_token=installation_access_token["token"])
 
         for file in showcaseRepoContentsResponse:
-            if file["path"] not in (repo+"/"+baseRepoPaths):
+            if file["path"] not in (baseRepoPaths):
                 await gh.delete(showcaseRepoTargetURL+"/contents/"+file["path"], 
                     data = {
                         "message" : "file removal is automatically reflected from changes to source",
