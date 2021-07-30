@@ -116,6 +116,7 @@ async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
 
 def findFromList(list,key,targetValue):
     for item in list:
+        print("Checking if '"+item[key]+"' (item[\"key\"]) is equal to '"+targetValue+"' (targetValue")
         if(item[key] == targetValue):
             return item
 
