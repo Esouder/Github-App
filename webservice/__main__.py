@@ -213,7 +213,7 @@ async def PR_closed(event, gh, *args, **kwargs):
                 encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
                 if((repo+"/"+file["path"]) in showcaseRepoPaths):
                     print("file '"+file["path"]+"' already exists")
-                    existingFile = findFromList(showCaseRepoContentsResponse,"path",file["path"])
+                    existingFile = findFromList(showcaseRepoContentsResponse,"path",file["path"])
                     print(existingFile)
                     SHA = existingFile["SHA"]
                     await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],SHA,gh,oauth_token=installation_access_token["token"])
