@@ -230,7 +230,7 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoDirectory = showcaseRepoTargetURL+'/contents/'+repo+"/"
         
         for file in showcaseRepoContentsResponse:
-            print("checking if elegebale for deletion: "+file["path"][:len(repo)]+" vs "+ repo)
+            print("checking if elegebale for deletion: is "+file["path"]" in " +baseRepoPaths+ " and is "+file["path"][:len(repo)]+" equal to "+ repo)
             if((file["path"] not in (baseRepoPaths)) and file["path"][:len(repo)] == repo):
                 await gh.delete(showcaseRepoTargetURL+"/contents/"+file["path"], 
                     data = {
