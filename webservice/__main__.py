@@ -231,8 +231,8 @@ async def PR_closed(event, gh, *args, **kwargs):
             if file["path"] not in (repo+"/"+baseRepoPaths):
                 await gh.delete(showcaseRepoTargetURL+"/contents/"+file["path"], 
                     data = {
-                        "message" : "file removal is automatically reflected from changes to source"
-                        "sha" : file["sha"]
+                        "message" : "file removal is automatically reflected from changes to source",
+                        "sha" : file["sha"],
                         "branch" : "showcase-update"
                     }, oauth_token=installation_access_token["token"])
 
