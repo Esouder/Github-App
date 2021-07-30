@@ -230,7 +230,7 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoDirectory = showcaseRepoTargetURL+'/contents/'+repo+"/"
         
         for file in showcaseRepoContentsResponse:
-            if (file["path"] not in (baseRepoPaths) and file["path"][:len(showcaseRepoDirectory)] != showcaseRepoDirectory):
+            if(file["path"] not in (baseRepoPaths) and file["path"][:len(showcaseRepoDirectory)] == showcaseRepoDirectory):
                 await gh.delete(showcaseRepoTargetURL+"/contents/"+file["path"], 
                     data = {
                         "message" : "file removal is automatically reflected from changes to source",
