@@ -108,6 +108,7 @@ async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
             data={
                 "message": "Showcaser Auto Commit: Updating Showcased Files",
                 "content": fileContents,
+                "sha" : oldSHA
                 "branch" : "showcase-update"
             },
             oauth_token=oauth_token 
@@ -218,7 +219,7 @@ async def PR_closed(event, gh, *args, **kwargs):
                     await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],SHA,gh,oauth_token=installation_access_token["token"])
                 else:
                     print("file '"+file["path"]+"' does not already exist, placing")
-                    await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],0,gh,oauth_token=installation_access_token["token"])
+                    await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],None,gh,oauth_token=installation_access_token["token"])
 
 
     elif(event.data["pull_request"]["merged"]==False):
