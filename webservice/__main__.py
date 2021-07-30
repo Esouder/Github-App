@@ -114,7 +114,7 @@ async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
             oauth_token=oauth_token 
         )
 
-def findFromList(list,key,value):
+def findFromList(list,key,targetValue):
     for item in list:
         if(item[key] == targetValue):
             return item
