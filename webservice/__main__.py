@@ -216,7 +216,7 @@ async def PR_closed(event, gh, *args, **kwargs):
                     print("file '"+file["path"]+"' already exists")
                     existingFile = findFromList(showcaseRepoContentsResponse,"path",repo+"/"+file["path"])
                     print(existingFile)
-                    SHA = existingFile["SHA"]
+                    SHA = existingFile["sha"]
                     await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],SHA,gh,oauth_token=installation_access_token["token"])
                 else:
                     print("file '"+file["path"]+"' does not already exist, placing")
