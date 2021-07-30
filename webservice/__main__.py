@@ -108,7 +108,7 @@ async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
             data={
                 "message": "Showcaser Auto Commit: Updating Showcased Files",
                 "content": fileContents,
-                "sha" : oldSHA
+                "sha" : oldSHA,
                 "branch" : "showcase-update"
             },
             oauth_token=oauth_token 
