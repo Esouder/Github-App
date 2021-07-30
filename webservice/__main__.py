@@ -208,6 +208,11 @@ async def PR_closed(event, gh, *args, **kwargs):
             subsetRepoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
+        baseRepoPaths = []
+        for file in repoContentsResponse:
+            baseRepoPaths.append(file["path"])
+        print(baseRepoPaths)
+
         for file in repoContentsResponse:
             if(file["path"] not in localShowcaseData["excludedFiles"] and file["name"] != ".showcase"):
                 fileContents = urllib.request.urlopen(file["download_url"]).read()
@@ -222,6 +227,14 @@ async def PR_closed(event, gh, *args, **kwargs):
                     print("file '"+file["path"]+"' does not already exist, placing")
                     await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],None,gh,oauth_token=installation_access_token["token"])
 
+        for file in showcaseRepoContentsResponse:
+            if file["path"] not in (repo+"/"+baseRepoPaths):
+                await gh.delete(showcaseRepoTargetURL+"/contents/"+file["path"], 
+                    data = {
+                        "message" : "file removal is automatically reflected from changes to source"
+                        "sha" : file["sha"]
+                        "branch" : "showcase-update"
+                    })
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
