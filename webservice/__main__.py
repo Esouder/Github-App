@@ -234,7 +234,7 @@ async def PR_closed(event, gh, *args, **kwargs):
                         "message" : "file removal is automatically reflected from changes to source"
                         "sha" : file["sha"]
                         "branch" : "showcase-update"
-                    })
+                    }, oauth_token=installation_access_token["token"])
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
