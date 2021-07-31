@@ -141,11 +141,12 @@ async def PR_opened(event,gh,*args,**kwargs):
 
     localShowcaseData = json.loads(localShowcaseFile.read())
 
+    showcaseRepo = localShowcaseData["showcaseRepo"]
     if(localShowcaseData["isShowcaseRepo"] == False):
         response = await gh.post(
                 event.data["pull_request"]["comments_url"],
                 data={
-                    "body": f"When you merge this pull request, your changes will be automatically reflected accross your linked showcase repository, {localShowcaseData["showcaseRepo"]}",
+                    "body": f"When you merge this pull request, your changes will be automatically reflected accross your linked showcase repository, {showcaseRepo}",
                 },
                 oauth_token=installation_access_token["token"],
             )
