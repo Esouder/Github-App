@@ -140,7 +140,12 @@ async def PR_opened(event,gh,*args,**kwargs):
         )
 
 
-
+async def mergeBranch(url,base_branch, gh,oauth_token):
+    await gh.post(url, data = {
+        "base" : base_branch,
+        "head" : "showcase-update", 
+    }, 
+    oauth_token = oauth_token)
 
 
 @router.register("pull_request", action="closed")
@@ -242,6 +247,8 @@ async def PR_closed(event, gh, *args, **kwargs):
                         "sha" : file["sha"],
                         "branch" : "showcase-update"
                     }, oauth_token=installation_access_token["token"])
+        mergeURL = 
+        await mergeBranch(showcaseRepoTargetURL+"/merges",showcaseRepoDefaultBranch,gh,oauth_token=installation_access_token["token"])
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
