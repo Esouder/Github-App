@@ -209,8 +209,10 @@ async def PR_closed(event, gh, *args, **kwargs):
             repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
         baseRepoPaths = []
+        baseRepoPathsForComparison = []
         for file in repoContentsResponse:
             baseRepoPaths.append(repo+"/contents/"+file["path"])
+            baseRepoPathsForComparison.append(repo+file["path"])
         print(baseRepoPaths)
 
         for file in repoContentsResponse:
@@ -230,10 +232,10 @@ async def PR_closed(event, gh, *args, **kwargs):
         showcaseRepoDirectory = showcaseRepoTargetURL+'/contents/'+repo+"/"
         
         print("base repo paths:")
-        print(baseRepoPaths)
+        print(baseRepoPathsForComparison)
         for file in showcaseRepoContentsResponse:
             print("checking if elegebale for deletion: is "+file["path"]+" in base repo paths and if "+file["path"][:len(repo)]+" equal to "+ repo)
-            if((file["path"] not in (baseRepoPaths)) and file["path"][:len(repo)] == repo):
+            if((file["path"] not in (baseRepoPathsForComparison)) and file["path"][:len(repo)] == repo):
                 await gh.delete(showcaseRepoTargetURL+"/contents/"+file["path"], 
                     data = {
                         "message" : "file removal is automatically reflected from changes to source",
