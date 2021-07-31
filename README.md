@@ -1,3 +1,5 @@
+You can install this yourself [here](https://github.com/apps/showcaser).
+
 ## `.showcase` file format
 
 it's a json file:
