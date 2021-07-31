@@ -212,7 +212,7 @@ async def PR_closed(event, gh, *args, **kwargs):
         baseRepoPathsForComparison = []
         for file in repoContentsResponse:
             baseRepoPaths.append(repo+"/contents/"+file["path"])
-            baseRepoPathsForComparison.append(repo+file["path"])
+            baseRepoPathsForComparison.append(repo+"/"+file["path"])
         print(baseRepoPaths)
 
         for file in repoContentsResponse:
