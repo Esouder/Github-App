@@ -247,7 +247,6 @@ async def PR_closed(event, gh, *args, **kwargs):
                         "sha" : file["sha"],
                         "branch" : "showcase-update"
                     }, oauth_token=installation_access_token["token"])
-        mergeURL = 
         await mergeBranch(showcaseRepoTargetURL+"/merges",showcaseRepoDefaultBranch,gh,oauth_token=installation_access_token["token"])
 
     elif(event.data["pull_request"]["merged"]==False):
