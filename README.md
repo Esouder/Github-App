@@ -60,7 +60,7 @@ Note that Showcaser will not function on changes that aren't made in a pull requ
 
 # Support
 
-Lol good luck with that.
+Good luck with that.
 
 You can create an issue in the issues tab, and maybe that'll get you some help though. No promises.
 
