@@ -250,7 +250,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         
         await mergeBranch(showcaseRepoTargetURL+"/merges",showcaseRepoDefaultBranch,gh,oauth_token=installation_access_token["token"])
-        await gh.delete(showcaseRepoNewBranchTargetURL+"/showcase-update",oauth_token=installation_access_token["token"])
+        await gh.delete(showcaseRepoNewBranchTargetURL+"/heads/showcase-update",oauth_token=installation_access_token["token"])
 
 
 
