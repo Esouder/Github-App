@@ -141,8 +141,7 @@ async def PR_opened(event,gh,*args,**kwargs):
 
     localShowcaseData = json.loads(localShowcaseFile.read())
 
-    showcaseRepo = localShowcaseData["showcaseRepo"]
-    if(localShowcaseData["isShowcaseRepo"] == False):
+    if(localShowcaseData["isShowcaseRepo"] == False and localShowcaseData["showcaseEnable"] == True):
         response = await gh.post(
                 event.data["pull_request"]["comments_url"],
                 data={
@@ -184,7 +183,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         localShowcaseData = json.loads(localShowcaseFile.read())
 
-        if(localShowcaseData["isShowcaseRepo"] == False):
+        if(localShowcaseData["isShowcaseRepo"] == False and localShowcaseData["showcaseEnable"] == True):
 
             showcaseRepo = localShowcaseData["showcaseRepo"]
 
