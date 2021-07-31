@@ -178,7 +178,7 @@ async def PR_closed(event, gh, *args, **kwargs):
 
         showcaseRepoResponse = await gh.getitem(showcaseRepoTargetURL,oauth_token=installation_access_token["token"])
 
-        showcaseRepoDefaultBranch = showcaseRepoResponse["default_branch"]
+        showcaseRepoDefaultBranch = showcaseRepoResponse["default_branch"]  
 
         showcaseRepoDefaultBranchTargetURL = showcaseRepoTargetURL+"/git/ref/heads/"+showcaseRepoDefaultBranch
 
@@ -247,7 +247,12 @@ async def PR_closed(event, gh, *args, **kwargs):
                         "sha" : file["sha"],
                         "branch" : "showcase-update"
                     }, oauth_token=installation_access_token["token"])
+
+        
         await mergeBranch(showcaseRepoTargetURL+"/merges",showcaseRepoDefaultBranch,gh,oauth_token=installation_access_token["token"])
+        await gh.delete(showcaseRepoNewBranchTargetURL+"/showcase-update",oauth_token=installation_access_token["token"])
+
+
 
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
