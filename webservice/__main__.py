@@ -58,7 +58,7 @@ def find_from_list(list, key, target_value):
 ### Async Functions ###
 
 
-async def collect_recursive(path, gh, oauth_token):
+async def collect_files_recursive(path, gh, oauth_token):
 
     """Collect the contents of a GitHub repo.
     Returns a list of all files in the repo. Does not work with submodules.
