@@ -74,7 +74,7 @@ async def collect_files_recursive(path, gh, oauth_token):
         if item["type"] == "file":
             responses.append(item)
         elif item["type"] == "dir":
-            recursive_responses = await collect_recursive(
+            recursive_responses = await collect_files_recursive(
                 path + item["name"] + "/", gh, oauth_token
             )
             responses = appext(responses, recursive_responses)
@@ -321,7 +321,7 @@ async def pull_request_closed(event, gh, *args, **kwargs):
 
             # get contents of showcase repo
             showcase_repo_contents_response = []
-            showcase_repo_contents_response = await collect_recursive(
+            showcase_repo_contents_response = await collect_files_recursive(
                 showcase_repo_target_URL + "/contents/",
                 gh,
                 oauth_token=installation_access_token["token"],
@@ -338,7 +338,7 @@ async def pull_request_closed(event, gh, *args, **kwargs):
                 upper_path = (
                     "/repos/" + owner + "/" + repo + "/contents" + path
                 )
-                subset_repo_contents_response = await collect_recursive(
+                subset_repo_contents_response = await collect_files_recursive(
                     upper_path,
                     gh,
                     oauth_token=installation_access_token["token"],
