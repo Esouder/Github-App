@@ -20,7 +20,6 @@ cache = cachetools.LRUCache(maxsize=500)
 
 routes = web.RouteTableDef()
 
-
 ### Supporting Functions ###
 
 
@@ -84,8 +83,7 @@ async def collect_recursive(path, gh, oauth_token):
 
 async def place_file(file_contents, new_path, old_SHA, gh, oauth_token):
 
-    """Simple wrapper function to place a file into a showcase repo. No return.
-    """
+    """Simple wrapper function to place a file into a showcase repo. No return."""
 
     response = await gh.put(
         new_path,
@@ -260,6 +258,7 @@ async def pull_request_closed(event, gh, *args, **kwargs):
         owner = event.data["repository"]["owner"]["login"]
         repo = event.data["repository"]["name"]
 
+        # parse the .showcase file
         showcase_file_target_URL = (
             "/repos/" + owner + "/" + repo + "/contents/" + ".showcase"
         )
@@ -280,6 +279,7 @@ async def pull_request_closed(event, gh, *args, **kwargs):
             and local_showcase_data["showcaseEnable"] == True
         ):
 
+            # create a new branch in the showcase repo
             showcase_repo = local_showcase_data["showcaseRepo"]
 
             showcase_repo_target_URL = "/repos/" + owner + "/" + showcase_repo
@@ -319,6 +319,7 @@ async def pull_request_closed(event, gh, *args, **kwargs):
                 oauth_token=installation_access_token["token"],
             )
 
+            # get contents of showcase repo
             showcase_repo_contents_response = []
             showcase_repo_contents_response = await collect_recursive(
                 showcase_repo_target_URL + "/contents/",
@@ -330,6 +331,7 @@ async def pull_request_closed(event, gh, *args, **kwargs):
             for file in showcase_repo_contents_response:
                 showcase_repo_paths.append(file["path"])
 
+            # get contents of originating repo
             repo_contents_response = []
             acceptable_file_paths = local_showcase_data["includedDirectories"]
             for path in acceptable_file_paths:
@@ -353,6 +355,7 @@ async def pull_request_closed(event, gh, *args, **kwargs):
                     repo + "/" + file["path"]
                 )
 
+            # copy repo contents from originating repo to showcase repo
             for file in repo_contents_response:
                 if (
                     file["path"] not in local_showcase_data["excludedFiles"]
@@ -395,6 +398,8 @@ async def pull_request_closed(event, gh, *args, **kwargs):
                             oauth_token=installation_access_token["token"],
                         )
 
+            # delete files in showcase repo that are no longer in the originating repo
+
             showcaseRepoDirectory = (
                 showcase_repo_target_URL + "/contents/" + repo + "/"
             )
@@ -412,18 +417,20 @@ async def pull_request_closed(event, gh, *args, **kwargs):
                         },
                         oauth_token=installation_access_token["token"],
                     )
-
+            # merge the branches
             await merge_branch(
                 showcase_repo_target_URL + "/merges",
                 showcase_repo_default_branch,
                 gh,
                 oauth_token=installation_access_token["token"],
             )
+            # delete the showcase update branch
             await gh.delete(
                 showcase_repo_new_branch_target_URL + "/heads/showcase-update",
                 oauth_token=installation_access_token["token"],
             )
 
+    # don't do anything if the pull request isn't merged
     elif event.data["pull_request"]["merged"] == False:
         print("A merge was not made")
     else:
