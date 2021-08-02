@@ -1,42 +1,139 @@
+### Imports ###
 import asyncio
+import base64
+import json
 import os
 import sys
 import traceback
 import urllib.request
-import json
-import base64
-
 
 import aiohttp
-from aiohttp import web
 import cachetools
+from aiohttp import web
 from gidgethub import aiohttp as gh_aiohttp
-from gidgethub import routing
-from gidgethub import sansio
-from gidgethub import apps
+from gidgethub import apps, routing, sansio
+
+### Async GitHub App Setup ###
 
 router = routing.Router()
 cache = cachetools.LRUCache(maxsize=500)
 
 routes = web.RouteTableDef()
 
+### Supporting Functions ###
 
-# can you tell I'm more of a C guy?
-def appext(origlist,data):
-    if(type(data) is list):
+
+def appext(origlist, data):
+    """Short for "append/extend". This takes a list and some single item or
+    iterable. If it's an item, it uses the .append() method to add it to the end
+    of the list, and if it's a list, it uses the .extend() method to add it to
+    the end of the list. It then returns the list.
+
+    >>>appext(["apple","orange"],"pear")
+
+    ["apple","orage","pair"]
+
+    >>>appext(["apple","orange"],["blueberry","strawberry","blackberry"])
+
+    ["apple","orange","blueberry","strawberry","blackberry"]
+    """
+
+    if type(data) is list:
         origlist.extend(data)
     else:
         origlist.append(data)
-    return origlist 
+    return origlist
+
+
+def find_from_list(list, key, target_value):
+    """Finds the first instance of a specified item/key pair from a list of JSON
+    objects, and returns the object.
+    """
+
+    for item in list:
+        if item[key] == target_value:
+            return item
+
+
+### Async Functions ###
+
+
+async def collect_files_recursive(path, gh, oauth_token):
+
+    """Collect the contents of a GitHub repo.
+    Returns a list of all files in the repo. Does not work with submodules.
+    """
+    responses = []
+    print("attempting get request with URL '" + path + "'")
+    response = await gh.getitem(
+        path,
+        accept="application/vnd.github.VERSION.object",
+        oauth_token=oauth_token,
+    )
+    for item in response["entries"]:
+        if item["type"] == "file":
+            responses.append(item)
+        elif item["type"] == "dir":
+            recursive_responses = await collect_files_recursive(
+                path + item["name"] + "/", gh, oauth_token
+            )
+            responses = appext(responses, recursive_responses)
+    return responses
+
+
+async def place_file(file_contents, new_path, old_SHA, gh, oauth_token):
+
+    """Simple wrapper function to place a file into a showcase repo. No return."""
+
+    response = await gh.put(
+        new_path,
+        data={
+            "message": "Showcaser Auto Commit: Updating Showcased Files",
+            "content": file_contents,
+            "sha": old_SHA,
+            "branch": "showcase-update",
+        },
+        oauth_token=oauth_token,
+    )
+
+
+async def merge_branch(url, base_branch, gh, oauth_token):
+
+    """Simple wrapper function to merge the showcase-update branch into the
+    default branch.
+    """
+
+    await gh.post(
+        url,
+        data={
+            "base": base_branch,
+            "head": "showcase-update",
+        },
+        oauth_token=oauth_token,
+    )
+
+
+### Webservice Functions ###
 
 
 @routes.get("/", name="home")
 async def handle_get(request):
-    return web.Response(text="Hello world")
+
+    """Handle any get requests. Returns a link to the public project repo"""
+
+    return web.Response(
+        text="I don't imagine this this is what you are looking for. Try https://github.com/Esouder/Showcaser"
+    )
 
 
 @routes.post("/webhook")
 async def webhook(request):
+
+    """Boilerplate webhook handler, from
+    https://github.com/Mariatta/github_app_boilerplate. Supports the main app
+    processes below
+    """
+
     try:
         body = await request.read()
         secret = os.environ.get("GH_SECRET")
@@ -60,6 +157,9 @@ async def webhook(request):
 
 @router.register("installation", action="created")
 async def repo_installation_added(event, gh, *args, **kwargs):
+
+    """Create and close a 'thanks' issue in every repo the app is installed in"""
+
     installation_id = event.data["installation"]["id"]
     installation_access_token = await apps.get_installation_access_token(
         gh,
@@ -88,40 +188,15 @@ async def repo_installation_added(event, gh, *args, **kwargs):
         )
 
 
-async def collectURLs(path, gh, oauth_token):
-    #get the contents of the directory
-    responses = []
-    print("attempting get request with URL '" + path +"'")
-    response = await gh.getitem(path,accept="application/vnd.github.VERSION.object",oauth_token=oauth_token)
-    for item in response["entries"]:
-        #print(item)
-        if(item["type"]=="file"):
-            responses.append(item)
-        elif (item["type"]=="dir"):
-            recursiveResponses = await collectURLs(path+item["name"]+"/", gh, oauth_token)
-            responses = appext(responses,recursiveResponses)
-    return responses
-
-async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
-    response = await gh.put(
-            newPath,
-            data={
-                "message": "Showcaser Auto Commit: Updating Showcased Files",
-                "content": fileContents,
-                "sha" : oldSHA,
-                "branch" : "showcase-update"
-            },
-            oauth_token=oauth_token 
-        )
-
-def findFromList(list,key,targetValue):
-    for item in list:
-        print("Checking if '"+item[key]+"' (item[\"key\"]) is equal to '"+targetValue+"' (targetValue")
-        if(item[key] == targetValue):
-            return item
-
 @router.register("pull_request", action="opened")
-async def PR_opened(event,gh,*args,**kwargs):
+async def pull_request_opened(event, gh, *args, **kwargs):
+
+    """Add a comment when an elegeble pull request is opened with info about what
+    showcaser will do, and on which directories it will showcase it.
+    """
+
+    # TODO - Make this message more clear?
+
     installation_id = event.data["installation"]["id"]
     repo = event.data["repository"]["name"]
     installation_access_token = await apps.get_installation_access_token(
@@ -133,35 +208,43 @@ async def PR_opened(event,gh,*args,**kwargs):
     owner = event.data["repository"]["owner"]["login"]
     repo = event.data["repository"]["name"]
 
-    showcaseFileTargetURL = "/repos/"+owner+"/"+repo+"/contents/"+".showcase"
+    showcase_file_target_URL = (
+        "/repos/" + owner + "/" + repo + "/contents/" + ".showcase"
+    )
 
-    localShowcaseFileResponse = await gh.getitem(showcaseFileTargetURL,oauth_token=installation_access_token["token"])
+    local_showcase_file_response = await gh.getitem(
+        showcase_file_target_URL,
+        oauth_token=installation_access_token["token"],
+    )
 
-    localShowcaseFile = urllib.request.urlopen(localShowcaseFileResponse["download_url"])
+    local_showcase_file = urllib.request.urlopen(
+        local_showcase_file_response["download_url"]
+    )
 
-    localShowcaseData = json.loads(localShowcaseFile.read())
+    local_showcase_data = json.loads(local_showcase_file.read())
 
-    if(localShowcaseData["isShowcaseRepo"] == False and localShowcaseData["showcaseEnable"] == True):
-        showcaseRepo = localShowcaseData["showcaseRepo"]
+    if (
+        local_showcase_data["isShowcaseRepo"] == False
+        and local_showcase_data["showcaseEnable"] == True
+    ):
+        showcase_repo = local_showcase_data["showcaseRepo"]
         response = await gh.post(
-                event.data["pull_request"]["comments_url"],
-                data={
-                    "body": f"When you merge this pull request, your changes will be automatically reflected accross your linked showcase repository, {showcaseRepo}",
-                },
-                oauth_token=installation_access_token["token"],
-            )
-
-
-async def mergeBranch(url,base_branch, gh,oauth_token):
-    await gh.post(url, data = {
-        "base" : base_branch,
-        "head" : "showcase-update", 
-    }, 
-    oauth_token = oauth_token)
+            event.data["pull_request"]["comments_url"],
+            data={
+                "body": f"When you merge this pull request, your changes will be automatically reflected accross your linked showcase repository, {showcase_repo}",
+            },
+            oauth_token=installation_access_token["token"],
+        )
 
 
 @router.register("pull_request", action="closed")
-async def PR_closed(event, gh, *args, **kwargs):
+async def pull_request_closed(event, gh, *args, **kwargs):
+
+    """This function is the main workings of the app: when a pull request is
+    closed and merged, this parses approprate .showcase files, copies changes,
+    and merges them into the defualt branch of the showcase repo.
+    """
+
     installation_id = event.data["installation"]["id"]
     installation_access_token = await apps.get_installation_access_token(
         gh,
@@ -169,97 +252,186 @@ async def PR_closed(event, gh, *args, **kwargs):
         app_id=os.environ.get("GH_APP_ID"),
         private_key=os.environ.get("GH_PRIVATE_KEY"),
     )
-    if(event.data["pull_request"]["merged"]== True):
+    if event.data["pull_request"]["merged"] == True:
         print("A Pull request was merged")
-
 
         owner = event.data["repository"]["owner"]["login"]
         repo = event.data["repository"]["name"]
 
-        showcaseFileTargetURL = "/repos/"+owner+"/"+repo+"/contents/"+".showcase"
+        # parse the .showcase file
+        showcase_file_target_URL = (
+            "/repos/" + owner + "/" + repo + "/contents/" + ".showcase"
+        )
 
-        localShowcaseFileResponse = await gh.getitem(showcaseFileTargetURL,oauth_token=installation_access_token["token"])
+        local_showcase_file_response = await gh.getitem(
+            showcase_file_target_URL,
+            oauth_token=installation_access_token["token"],
+        )
 
-        localShowcaseFile = urllib.request.urlopen(localShowcaseFileResponse["download_url"])
+        local_showcase_file = urllib.request.urlopen(
+            local_showcase_file_response["download_url"]
+        )
 
-        localShowcaseData = json.loads(localShowcaseFile.read())
+        local_showcase_data = json.loads(local_showcase_file.read())
 
-        if(localShowcaseData["isShowcaseRepo"] == False and localShowcaseData["showcaseEnable"] == True):
+        if (
+            local_showcase_data["isShowcaseRepo"] == False
+            and local_showcase_data["showcaseEnable"] == True
+        ):
 
-            showcaseRepo = localShowcaseData["showcaseRepo"]
+            # create a new branch in the showcase repo
+            showcase_repo = local_showcase_data["showcaseRepo"]
 
-            showcaseRepoTargetURL = "/repos/"+owner+"/"+showcaseRepo
+            showcase_repo_target_URL = "/repos/" + owner + "/" + showcase_repo
 
-            showcaseRepoResponse = await gh.getitem(showcaseRepoTargetURL,oauth_token=installation_access_token["token"])
-
-            showcaseRepoDefaultBranch = showcaseRepoResponse["default_branch"]  
-
-            showcaseRepoDefaultBranchTargetURL = showcaseRepoTargetURL+"/git/ref/heads/"+showcaseRepoDefaultBranch
-
-            showcaseRepoDefaultBranchResponse = await gh.getitem(showcaseRepoDefaultBranchTargetURL,oauth_token=installation_access_token["token"])
-
-            showcaseRepoNewBranchTargetURL = f"/repos/{owner}/{showcaseRepo}/git/refs"
-
-
-            newBranchCreatedresponse = await gh.post(
-                showcaseRepoNewBranchTargetURL,
-                data={
-                    "ref": "refs/heads/showcase-update",
-                    "sha": showcaseRepoDefaultBranchResponse["object"]["sha"]       
-                },
-                oauth_token=installation_access_token["token"]
+            showcase_repo_response = await gh.getitem(
+                showcase_repo_target_URL,
+                oauth_token=installation_access_token["token"],
             )
 
-            showcaseRepoContentsResponse = []
-            showcaseRepoContentsResponse =  await collectURLs(showcaseRepoTargetURL+"/contents/",gh,oauth_token=installation_access_token["token"])
-            
+            showcase_repo_default_branch = showcase_repo_response[
+                "default_branch"
+            ]
 
-            showcaseRepoPaths = []
-            for file in showcaseRepoContentsResponse:
-                showcaseRepoPaths.append(file["path"])
+            showcase_repo_default_branch_target_URL = (
+                showcase_repo_target_URL
+                + "/git/ref/heads/"
+                + showcase_repo_default_branch
+            )
 
-            repoContentsResponse = []
-            acceptableFilePaths = localShowcaseData["includedDirectories"]
-            for path in acceptableFilePaths:
-                upperPath = "/repos/"+owner+"/"+repo+"/contents"+path
-                subsetRepoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
-                repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
+            showcase_repo_default_branch_response = await gh.getitem(
+                showcase_repo_default_branch_target_URL,
+                oauth_token=installation_access_token["token"],
+            )
 
-            baseRepoPaths = []
-            baseRepoPathsForComparison = []
-            for file in repoContentsResponse:
-                baseRepoPaths.append(repo+"/contents/"+file["path"])
-                baseRepoPathsForComparison.append(repo+"/"+file["path"])
+            showcase_repo_new_branch_target_URL = (
+                f"/repos/{owner}/{showcase_repo}/git/refs"
+            )
 
-            for file in repoContentsResponse:
-                if(file["path"] not in localShowcaseData["excludedFiles"] and file["name"] != ".showcase"):
-                    fileContents = urllib.request.urlopen(file["download_url"]).read()
-                    encodedFileContents = base64.b64encode(fileContents).decode('utf-8')
-                    if((repo+"/"+file["path"]) in showcaseRepoPaths):
-                        existingFile = findFromList(showcaseRepoContentsResponse,"path",repo+"/"+file["path"])
-                        SHA = existingFile["sha"]
-                        await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],SHA,gh,oauth_token=installation_access_token["token"])
+            new_branch_created_response = await gh.post(
+                showcase_repo_new_branch_target_URL,
+                data={
+                    "ref": "refs/heads/showcase-update",
+                    "sha": showcase_repo_default_branch_response["object"][
+                        "sha"
+                    ],
+                },
+                oauth_token=installation_access_token["token"],
+            )
+
+            # get contents of showcase repo
+            showcase_repo_contents_response = []
+            showcase_repo_contents_response = await collect_files_recursive(
+                showcase_repo_target_URL + "/contents/",
+                gh,
+                oauth_token=installation_access_token["token"],
+            )
+
+            showcase_repo_paths = []
+            for file in showcase_repo_contents_response:
+                showcase_repo_paths.append(file["path"])
+
+            # get contents of originating repo
+            repo_contents_response = []
+            acceptable_file_paths = local_showcase_data["includedDirectories"]
+            for path in acceptable_file_paths:
+                upper_path = (
+                    "/repos/" + owner + "/" + repo + "/contents" + path
+                )
+                subset_repo_contents_response = await collect_files_recursive(
+                    upper_path,
+                    gh,
+                    oauth_token=installation_access_token["token"],
+                )
+                repo_contents_response = appext(
+                    repo_contents_response, subset_repo_contents_response
+                )
+
+            base_repo_paths = []
+            base_repo_paths_for_comparison = []
+            for file in repo_contents_response:
+                base_repo_paths.append(repo + "/contents/" + file["path"])
+                base_repo_paths_for_comparison.append(
+                    repo + "/" + file["path"]
+                )
+
+            # copy repo contents from originating repo to showcase repo
+            for file in repo_contents_response:
+                if (
+                    file["path"] not in local_showcase_data["excludedFiles"]
+                    and file["name"] != ".showcase"
+                ):
+                    file_contents = urllib.request.urlopen(
+                        file["download_url"]
+                    ).read()
+                    encoded_file_contents = base64.b64encode(
+                        file_contents
+                    ).decode("utf-8")
+                    if (repo + "/" + file["path"]) in showcase_repo_paths:
+                        existing_file = find_from_list(
+                            showcase_repo_contents_response,
+                            "path",
+                            repo + "/" + file["path"],
+                        )
+                        SHA = existing_file["sha"]
+                        await place_file(
+                            encoded_file_contents,
+                            showcase_repo_target_URL
+                            + "/contents/"
+                            + repo
+                            + "/"
+                            + file["path"],
+                            SHA,
+                            gh,
+                            oauth_token=installation_access_token["token"],
+                        )
                     else:
-                        await placeFile(encodedFileContents,showcaseRepoTargetURL+'/contents/'+repo+"/"+file["path"],None,gh,oauth_token=installation_access_token["token"])
+                        await place_file(
+                            encoded_file_contents,
+                            showcase_repo_target_URL
+                            + "/contents/"
+                            + repo
+                            + "/"
+                            + file["path"],
+                            None,
+                            gh,
+                            oauth_token=installation_access_token["token"],
+                        )
 
-            showcaseRepoDirectory = showcaseRepoTargetURL+'/contents/'+repo+"/"
-            
-            for file in showcaseRepoContentsResponse:
-                if((file["path"] not in (baseRepoPathsForComparison)) and file["path"][:len(repo)] == repo):
-                    await gh.delete(showcaseRepoTargetURL+"/contents/"+file["path"], 
-                        data = {
-                            "message" : "file removal is automatically reflected from changes to source",
-                            "sha" : file["sha"],
-                            "branch" : "showcase-update"
-                        }, oauth_token=installation_access_token["token"])
+            # delete files in showcase repo that are no longer in the originating repo
 
-            
-            await mergeBranch(showcaseRepoTargetURL+"/merges",showcaseRepoDefaultBranch,gh,oauth_token=installation_access_token["token"])
-            await gh.delete(showcaseRepoNewBranchTargetURL+"/heads/showcase-update",oauth_token=installation_access_token["token"])
+            showcaseRepoDirectory = (
+                showcase_repo_target_URL + "/contents/" + repo + "/"
+            )
 
+            for file in showcase_repo_contents_response:
+                if (
+                    file["path"] not in base_repo_paths_for_comparison
+                ) and file["path"][: len(repo)] == repo:
+                    await gh.delete(
+                        showcase_repo_target_URL + "/contents/" + file["path"],
+                        data={
+                            "message": "file removal is automatically reflected from changes to source",
+                            "sha": file["sha"],
+                            "branch": "showcase-update",
+                        },
+                        oauth_token=installation_access_token["token"],
+                    )
+            # merge the branches
+            await merge_branch(
+                showcase_repo_target_URL + "/merges",
+                showcase_repo_default_branch,
+                gh,
+                oauth_token=installation_access_token["token"],
+            )
+            # delete the showcase update branch
+            await gh.delete(
+                showcase_repo_new_branch_target_URL + "/heads/showcase-update",
+                oauth_token=installation_access_token["token"],
+            )
 
-
-    elif(event.data["pull_request"]["merged"]==False):
+    # don't do anything if the pull request isn't merged
+    elif event.data["pull_request"]["merged"] == False:
         print("A merge was not made")
     else:
         print("code is broken")
