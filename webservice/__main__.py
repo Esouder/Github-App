@@ -1,3 +1,4 @@
+### Imports ###
 import asyncio
 import os
 import sys
@@ -5,8 +6,6 @@ import traceback
 import urllib.request
 import json
 import base64
-
-
 import aiohttp
 from aiohttp import web
 import cachetools
@@ -15,28 +14,116 @@ from gidgethub import routing
 from gidgethub import sansio
 from gidgethub import apps
 
+
+### Async GitHub App Setup ###
+
 router = routing.Router()
 cache = cachetools.LRUCache(maxsize=500)
 
 routes = web.RouteTableDef()
 
 
-# can you tell I'm more of a C guy?
+### Supporting Functions ###
+
 def appext(origlist,data):
+    
+    '''Short for "append/extend". This takes a list and some single item or 
+    iterable. If it's an item, it uses the .append() method to add it to the end
+    of the list, and if it's a list, it uses the .extend() method to add it to 
+    the end of the list. It then returns the list. 
+
+    >>>appext(["apple","orange"],"pear")
+
+    ["apple","orage","pair"]
+
+    >>>appext(["apple","orange"],["blueberry","strawberry","blackberry"])
+
+    ["apple","orange","blueberry","strawberry","blackberry"]
+    '''
+
     if(type(data) is list):
         origlist.extend(data)
     else:
         origlist.append(data)
-    return origlist 
+    return origlist
 
+def findFromList(list,key,targetValue):
+
+    '''Finds the first instance of a specified item/key pair from a list of JSON 
+    objects, and returns the object.
+    '''
+
+    for item in list:
+        if(item[key] == targetValue):
+            return item
+
+
+### Async Functions ###
+
+async def collectRecursive(path, gh, oauth_token):
+
+    '''Collect the contents of a GitHub repo.
+    Returns a list of all files in the repo. Does not work with submodules.
+    '''
+    responses = []
+    print("attempting get request with URL '" + path +"'")
+    response = await gh.getitem(path,accept="application/vnd.github.VERSION.object",oauth_token=oauth_token)
+    for item in response["entries"]:
+        if(item["type"]=="file"):
+            responses.append(item)
+        elif (item["type"]=="dir"):
+            recursiveResponses = await collectRecursive(path+item["name"]+"/", gh, oauth_token)
+            responses = appext(responses,recursiveResponses)
+    return responses
+
+async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
+
+    '''Simple wrapper function to place a file into a showcase repo. No return.
+    '''
+
+    response = await gh.put(
+            newPath,
+            data={
+                "message": "Showcaser Auto Commit: Updating Showcased Files",
+                "content": fileContents,
+                "sha" : oldSHA,
+                "branch" : "showcase-update"
+            },
+            oauth_token=oauth_token 
+        )
+
+async def mergeBranch(url,base_branch, gh,oauth_token):
+
+    '''Simple wrapper function to merge the showcase-update branch into the
+    default branch.
+    '''
+
+    await gh.post(url, data = {
+        "base" : base_branch,
+        "head" : "showcase-update", 
+    }, 
+    oauth_token = oauth_token)
+
+
+### Webservice Functions ###
 
 @routes.get("/", name="home")
 async def handle_get(request):
-    return web.Response(text="Hello world")
+
+    '''Handle any get requests. Returns a link to the public project repo
+    '''
+
+    return web.Response(text="I don't imagine this this is what you are looking for. Try https://github.com/Esouder/Showcaser")
 
 
 @routes.post("/webhook")
 async def webhook(request):
+
+    '''Boilerplate webhook handler, from 
+    https://github.com/Mariatta/github_app_boilerplate. Supports the main app
+    processes below
+    '''
+
     try:
         body = await request.read()
         secret = os.environ.get("GH_SECRET")
@@ -60,6 +147,10 @@ async def webhook(request):
 
 @router.register("installation", action="created")
 async def repo_installation_added(event, gh, *args, **kwargs):
+
+    '''Create and close a 'thanks' issue in every repo the app is installed in
+    '''
+
     installation_id = event.data["installation"]["id"]
     installation_access_token = await apps.get_installation_access_token(
         gh,
@@ -87,41 +178,15 @@ async def repo_installation_added(event, gh, *args, **kwargs):
             oauth_token=installation_access_token["token"],
         )
 
-
-async def collectURLs(path, gh, oauth_token):
-    #get the contents of the directory
-    responses = []
-    print("attempting get request with URL '" + path +"'")
-    response = await gh.getitem(path,accept="application/vnd.github.VERSION.object",oauth_token=oauth_token)
-    for item in response["entries"]:
-        #print(item)
-        if(item["type"]=="file"):
-            responses.append(item)
-        elif (item["type"]=="dir"):
-            recursiveResponses = await collectURLs(path+item["name"]+"/", gh, oauth_token)
-            responses = appext(responses,recursiveResponses)
-    return responses
-
-async def placeFile(fileContents,newPath,oldSHA,gh,oauth_token):
-    response = await gh.put(
-            newPath,
-            data={
-                "message": "Showcaser Auto Commit: Updating Showcased Files",
-                "content": fileContents,
-                "sha" : oldSHA,
-                "branch" : "showcase-update"
-            },
-            oauth_token=oauth_token 
-        )
-
-def findFromList(list,key,targetValue):
-    for item in list:
-        print("Checking if '"+item[key]+"' (item[\"key\"]) is equal to '"+targetValue+"' (targetValue")
-        if(item[key] == targetValue):
-            return item
-
 @router.register("pull_request", action="opened")
 async def PR_opened(event,gh,*args,**kwargs):
+
+    '''Add a comment when an elegeble pull request is opened with info about what 
+    showcaser will do, and on which directories it will showcase it.
+    '''
+
+    #TODO - Make this message more clear?
+
     installation_id = event.data["installation"]["id"]
     repo = event.data["repository"]["name"]
     installation_access_token = await apps.get_installation_access_token(
@@ -151,17 +216,14 @@ async def PR_opened(event,gh,*args,**kwargs):
                 oauth_token=installation_access_token["token"],
             )
 
-
-async def mergeBranch(url,base_branch, gh,oauth_token):
-    await gh.post(url, data = {
-        "base" : base_branch,
-        "head" : "showcase-update", 
-    }, 
-    oauth_token = oauth_token)
-
-
 @router.register("pull_request", action="closed")
 async def PR_closed(event, gh, *args, **kwargs):
+
+    '''This function is the main workings of the app: when a pull request is 
+    closed and merged, this parses approprate .showcase files, copies changes,
+    and merges them into the defualt branch of the showcase repo.
+    '''
+
     installation_id = event.data["installation"]["id"]
     installation_access_token = await apps.get_installation_access_token(
         gh,
@@ -211,7 +273,7 @@ async def PR_closed(event, gh, *args, **kwargs):
             )
 
             showcaseRepoContentsResponse = []
-            showcaseRepoContentsResponse =  await collectURLs(showcaseRepoTargetURL+"/contents/",gh,oauth_token=installation_access_token["token"])
+            showcaseRepoContentsResponse =  await collectRecursive(showcaseRepoTargetURL+"/contents/",gh,oauth_token=installation_access_token["token"])
             
 
             showcaseRepoPaths = []
@@ -222,7 +284,7 @@ async def PR_closed(event, gh, *args, **kwargs):
             acceptableFilePaths = localShowcaseData["includedDirectories"]
             for path in acceptableFilePaths:
                 upperPath = "/repos/"+owner+"/"+repo+"/contents"+path
-                subsetRepoContentsResponse =  await collectURLs(upperPath,gh,oauth_token=installation_access_token["token"])
+                subsetRepoContentsResponse =  await collectRecursive(upperPath,gh,oauth_token=installation_access_token["token"])
                 repoContentsResponse=appext(repoContentsResponse,subsetRepoContentsResponse)
 
             baseRepoPaths = []
@@ -257,13 +319,10 @@ async def PR_closed(event, gh, *args, **kwargs):
             await mergeBranch(showcaseRepoTargetURL+"/merges",showcaseRepoDefaultBranch,gh,oauth_token=installation_access_token["token"])
             await gh.delete(showcaseRepoNewBranchTargetURL+"/heads/showcase-update",oauth_token=installation_access_token["token"])
 
-
-
     elif(event.data["pull_request"]["merged"]==False):
         print("A merge was not made")
     else:
         print("code is broken")
-
 
 if __name__ == "__main__":  # pragma: no cover
     app = web.Application()
